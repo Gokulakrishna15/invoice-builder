@@ -1,126 +1,211 @@
-import React, { useState } from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 function App() {
-  const [clientName, setClientName] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
-  const [items, setItems] = useState([{ description: '', quantity: 1, price: 0 }]);
+  const { register, handleSubmit, formState: { errors } } = useForm();
+
+  const [client, setClient] = useState({
+    name: "",
+    address: "",
+    invoiceNumber: "",
+    date: "",
+  });
+
+  const [items, setItems] = useState([
+    { description: "", quantity: 1, rate: 0, amount: 0 },
+  ]);
+
+  const [totals, setTotals] = useState({ subtotal: 0, tax: 0, total: 0 });
+
+  useEffect(() => {
+    const subtotal = items.reduce(
+      (acc, item) => acc + item.quantity * item.rate,
+      0
+    );
+    const tax = subtotal * 0.18;
+    const total = subtotal + tax;
+    setTotals({ subtotal, tax, total });
+  }, [items]);
 
   const handleItemChange = (index, field, value) => {
-    const newItems = [...items];
-    newItems[index][field] = field === 'description' ? value : parseFloat(value);
-    setItems(newItems);
+    const updatedItems = [...items];
+    updatedItems[index][field] = field === "description" ? value : Number(value);
+    updatedItems[index].amount =
+      updatedItems[index].quantity * updatedItems[index].rate;
+    setItems(updatedItems);
   };
 
-  const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, price: 0 }]);
+  const addItem = () =>
+    setItems([...items, { description: "", quantity: 1, rate: 0, amount: 0 }]);
+
+  const removeItem = (index) =>
+    setItems(items.filter((_, i) => i !== index));
+
+  const onSubmit = () => {
+    console.log("Form is valid. Ready to export or preview.");
   };
 
-  const removeItem = (index) => {
-    const newItems = items.filter((_, i) => i !== index);
-    setItems(newItems);
-  };
-
-  const calculateTotal = () => {
-    return items.reduce((total, item) => total + item.quantity * item.price, 0).toFixed(2);
-  };
-
-  const exportPDF = () => {
-    const invoice = document.getElementById('invoice');
-    html2canvas(invoice).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
+  const generatePDF = () => {
+    const invoice = document.getElementById("invoice-preview");
+    html2canvas(invoice, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-      const imgX = (pageWidth - imgWidth * ratio) / 2;
-      const imgY = 10;
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save('invoice.pdf');
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.save("invoice.pdf");
     });
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div id="invoice" className="bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">Invoice Builder</h1>
+    <form onSubmit={handleSubmit(onSubmit)} className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
+      <div id="invoice-preview" className="bg-white p-6 rounded shadow-md">
+        <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">Invoice</h1>
 
-        <div className="mb-4">
-          <label className="block font-semibold">Client Name</label>
-          <input
-            type="text"
-            value={clientName}
-            onChange={(e) => setClientName(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block font-semibold">Client Email</label>
-          <input
-            type="email"
-            value={clientEmail}
-            onChange={(e) => setClientEmail(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        <h2 className="text-xl font-semibold mb-2">Line Items</h2>
-        {items.map((item, index) => (
-          <div key={index} className="flex gap-2 mb-2">
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="text-sm font-medium">Client Name</label>
             <input
-              type="text"
-              placeholder="Description"
-              value={item.description}
-              onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-              className="flex-1 border p-2 rounded"
+              className="border p-2 w-full rounded"
+              placeholder="Client Name"
+              {...register("clientName", { required: "Client name is required" })}
+              value={client.name}
+              onChange={(e) => setClient({ ...client, name: e.target.value })}
             />
-            <input
-              type="number"
-              placeholder="Qty"
-              value={item.quantity}
-              onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-              className="w-20 border p-2 rounded"
-            />
-            <input
-              type="number"
-              placeholder="Price"
-              value={item.price}
-              onChange={(e) => handleItemChange(index, 'price', e.target.value)}
-              className="w-24 border p-2 rounded"
-            />
-            <button
-              onClick={() => removeItem(index)}
-              className="bg-red-500 text-white px-2 rounded hover:bg-red-600"
-            >
-              ✕
-            </button>
+            {errors.clientName && <p className="text-red-500 text-sm">{errors.clientName.message}</p>}
           </div>
-        ))}
+
+          <div>
+            <label className="text-sm font-medium">Address</label>
+            <input
+              className="border p-2 w-full rounded"
+              placeholder="Address"
+              {...register("address", { required: "Address is required" })}
+              value={client.address}
+              onChange={(e) => setClient({ ...client, address: e.target.value })}
+            />
+            {errors.address && <p className="text-red-500 text-sm">{errors.address.message}</p>}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Invoice Number</label>
+            <input
+              className="border p-2 w-full rounded"
+              placeholder="Invoice Number"
+              {...register("invoiceNumber", { required: "Invoice number is required" })}
+              value={client.invoiceNumber}
+              onChange={(e) => setClient({ ...client, invoiceNumber: e.target.value })}
+            />
+            {errors.invoiceNumber && <p className="text-red-500 text-sm">{errors.invoiceNumber.message}</p>}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Date</label>
+            <input
+              className="border p-2 w-full rounded"
+              type="date"
+              {...register("date", { required: "Date is required" })}
+              value={client.date}
+              onChange={(e) => setClient({ ...client, date: e.target.value })}
+            />
+            {errors.date && <p className="text-red-500 text-sm">{errors.date.message}</p>}
+          </div>
+        </div>
+
+        <table className="w-full mb-6 border border-gray-300">
+          <thead>
+            <tr className="bg-gray-100 text-left">
+              <th className="p-2">Description</th>
+              <th className="p-2">Qty</th>
+              <th className="p-2">Rate</th>
+              <th className="p-2">Amount</th>
+              <th className="p-2">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, idx) => (
+              <tr key={idx} className="border-t">
+                <td>
+                  <input
+                    className="border p-1 w-full rounded"
+                    placeholder="Item description"
+                    value={item.description}
+                    onChange={(e) =>
+                      handleItemChange(idx, "description", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="border p-1 w-full rounded"
+                    value={item.quantity}
+                    onChange={(e) =>
+                      handleItemChange(idx, "quantity", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="border p-1 w-full rounded"
+                    value={item.rate}
+                    onChange={(e) =>
+                      handleItemChange(idx, "rate", e.target.value)
+                    }
+                  />
+                </td>
+                <td className="text-center">₹{item.amount.toFixed(2)}</td>
+                <td>
+                  <button
+                    className="text-red-500"
+                    type="button"
+                    onClick={() => removeItem(idx)}
+                  >
+                    ❌
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
         <button
+          type="button"
+          className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
           onClick={addItem}
-          className="mb-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
-          Add Item
+          ➕ Add Item
         </button>
 
-        <div className="text-right font-bold text-lg">
-          Total: ₹{calculateTotal()}
+        <div className="text-right space-y-2 mt-4">
+          <p>Subtotal: ₹{totals.subtotal.toFixed(2)}</p>
+          <p>Tax (18%): ₹{totals.tax.toFixed(2)}</p>
+          <p className="font-bold text-lg">Total: ₹{totals.total.toFixed(2)}</p>
         </div>
       </div>
 
-      <button
-        onClick={exportPDF}
-        className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-      >
-        Export as PDF
-      </button>
-    </div>
+      <div className="flex justify-between mt-6">
+        <button
+          type="submit"
+          className="bg-green-600 text-white px-6 py-2 rounded"
+        >
+          ✅ Validate & Preview
+        </button>
+
+        <button
+          type="button"
+          className="bg-purple-600 text-white px-6 py-2 rounded"
+          onClick={generatePDF}
+        >
+          🧾 Export as PDF
+        </button>
+      </div>
+    </form>
   );
 }
 
