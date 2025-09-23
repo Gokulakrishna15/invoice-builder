@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 function App() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -48,72 +47,76 @@ function App() {
   };
 
   const generatePDF = () => {
-    const invoice = document.getElementById("invoice-preview");
-    html2canvas(invoice, { scale: 2 }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const doc = new jsPDF();
+    let y = 10;
 
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-      pdf.save("invoice.pdf");
+    doc.setFontSize(18);
+    doc.text("Invoice", 90, y);
+    y += 10;
+
+    doc.setFontSize(12);
+    doc.text(`Client Name: ${client.name}`, 10, y);
+    y += 7;
+    doc.text(`Address: ${client.address}`, 10, y);
+    y += 7;
+    doc.text(`Invoice Number: ${client.invoiceNumber}`, 10, y);
+    y += 7;
+    doc.text(`Date: ${client.date}`, 10, y);
+    y += 10;
+
+    doc.setFontSize(14);
+    doc.text("Items", 10, y);
+    y += 7;
+
+    doc.setFontSize(12);
+    doc.text("Description", 10, y);
+    doc.text("Qty", 80, y);
+    doc.text("Rate", 100, y);
+    doc.text("Amount", 130, y);
+    y += 7;
+
+    items.forEach((item) => {
+      doc.text(item.description, 10, y);
+      doc.text(String(item.quantity), 80, y);
+      doc.text(`₹${item.rate}`, 100, y);
+      doc.text(`₹${item.amount.toFixed(2)}`, 130, y);
+      y += 7;
     });
+
+    y += 10;
+    doc.text(`Subtotal: ₹${totals.subtotal.toFixed(2)}`, 130, y);
+    y += 7;
+    doc.text(`Tax (18%): ₹${totals.tax.toFixed(2)}`, 130, y);
+    y += 7;
+    doc.text(`Total: ₹${totals.total.toFixed(2)}`, 130, y);
+
+    doc.save("invoice.pdf");
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
-      <div id="invoice-preview" className="bg-white p-6 rounded shadow-md">
+      <div className="bg-white p-6 rounded shadow-md">
         <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">Invoice</h1>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="text-sm font-medium">Client Name</label>
-            <input
-              className="border p-2 w-full rounded"
-              placeholder="Client Name"
-              {...register("clientName", { required: "Client name is required" })}
-              value={client.name}
-              onChange={(e) => setClient({ ...client, name: e.target.value })}
-            />
-            {errors.clientName && <p className="text-red-500 text-sm">{errors.clientName.message}</p>}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Address</label>
-            <input
-              className="border p-2 w-full rounded"
-              placeholder="Address"
-              {...register("address", { required: "Address is required" })}
-              value={client.address}
-              onChange={(e) => setClient({ ...client, address: e.target.value })}
-            />
-            {errors.address && <p className="text-red-500 text-sm">{errors.address.message}</p>}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Invoice Number</label>
-            <input
-              className="border p-2 w-full rounded"
-              placeholder="Invoice Number"
-              {...register("invoiceNumber", { required: "Invoice number is required" })}
-              value={client.invoiceNumber}
-              onChange={(e) => setClient({ ...client, invoiceNumber: e.target.value })}
-            />
-            {errors.invoiceNumber && <p className="text-red-500 text-sm">{errors.invoiceNumber.message}</p>}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Date</label>
-            <input
-              className="border p-2 w-full rounded"
-              type="date"
-              {...register("date", { required: "Date is required" })}
-              value={client.date}
-              onChange={(e) => setClient({ ...client, date: e.target.value })}
-            />
-            {errors.date && <p className="text-red-500 text-sm">{errors.date.message}</p>}
-          </div>
+          {["Client Name", "Address", "Invoice Number", "Date"].map((label, idx) => {
+            const field = ["name", "address", "invoiceNumber", "date"][idx];
+            const type = field === "date" ? "date" : "text";
+            return (
+              <div key={field}>
+                <label className="text-sm font-medium">{label}</label>
+                <input
+                  type={type}
+                  className="border p-2 w-full rounded"
+                  placeholder={label}
+                  {...register(field, { required: `${label} is required` })}
+                  value={client[field]}
+                  onChange={(e) => setClient({ ...client, [field]: e.target.value })}
+                />
+                {errors[field] && <p className="text-red-500 text-sm">{errors[field].message}</p>}
+              </div>
+            );
+          })}
         </div>
 
         <table className="w-full mb-6 border border-gray-300">
@@ -134,9 +137,7 @@ function App() {
                     className="border p-1 w-full rounded"
                     placeholder="Item description"
                     value={item.description}
-                    onChange={(e) =>
-                      handleItemChange(idx, "description", e.target.value)
-                    }
+                    onChange={(e) => handleItemChange(idx, "description", e.target.value)}
                   />
                 </td>
                 <td>
@@ -144,9 +145,7 @@ function App() {
                     type="number"
                     className="border p-1 w-full rounded"
                     value={item.quantity}
-                    onChange={(e) =>
-                      handleItemChange(idx, "quantity", e.target.value)
-                    }
+                    onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
                   />
                 </td>
                 <td>
@@ -154,9 +153,7 @@ function App() {
                     type="number"
                     className="border p-1 w-full rounded"
                     value={item.rate}
-                    onChange={(e) =>
-                      handleItemChange(idx, "rate", e.target.value)
-                    }
+                    onChange={(e) => handleItemChange(idx, "rate", e.target.value)}
                   />
                 </td>
                 <td className="text-center">₹{item.amount.toFixed(2)}</td>

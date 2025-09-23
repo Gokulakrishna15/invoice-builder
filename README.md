@@ -7,7 +7,7 @@ A responsive invoice generation app built with **React**, **TailwindCSS**, and *
 - Add/edit/delete client and billing info
 - Add multiple line items with quantity and rate
 - Auto-calculate subtotal, tax (18%), and grand total
-- Export invoice as a styled PDF
+- Export invoice as a structured PDF (not a screenshot)
 - Responsive layout using TailwindCSS
 - Form validation with react-hook-form
 
@@ -16,7 +16,7 @@ A responsive invoice generation app built with **React**, **TailwindCSS**, and *
 - React JS
 - TailwindCSS
 - React Hooks
-- jsPDF + html2canvas
+- jsPDF
 - Vite
 
 ## 📦 Installation
