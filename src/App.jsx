@@ -96,6 +96,12 @@ function App() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
       <div className="bg-white p-6 rounded shadow-md">
+
+        {/* ✅ Tailwind Proof Banner */}
+        <div className="bg-green-500 text-white p-2 rounded text-center mb-6">
+          ✅ Tailwind CSS applied via Vite (no CDN used)
+        </div>
+
         <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">Invoice</h1>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
