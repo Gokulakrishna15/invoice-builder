@@ -77,7 +77,7 @@ function App() {
     y += 7;
 
     items.forEach((item) => {
-      doc.text(item.description, 10, y);
+      doc.text(item.description || "-", 10, y);
       doc.text(String(item.quantity), 80, y);
       doc.text(`₹${item.rate}`, 100, y);
       doc.text(`₹${item.amount.toFixed(2)}`, 130, y);
@@ -85,6 +85,11 @@ function App() {
     });
 
     y += 10;
+    doc.setFontSize(14);
+    doc.text("Summary", 10, y);
+    y += 7;
+
+    doc.setFontSize(12);
     doc.text(`Subtotal: ₹${totals.subtotal.toFixed(2)}`, 130, y);
     y += 7;
     doc.text(`Tax (18%): ₹${totals.tax.toFixed(2)}`, 130, y);
