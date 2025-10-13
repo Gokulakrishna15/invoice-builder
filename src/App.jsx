@@ -2,10 +2,10 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
-// ✅ Force plugin registration (Netlify-safe)
-jsPDF.API.autoTableSetDefaults?.({});
+// ✅ Explicitly attach plugin to jsPDF prototype
+jsPDF.API.autoTable = autoTable;
 
 function App() {
   const { register, handleSubmit, formState: { errors } } = useForm();
