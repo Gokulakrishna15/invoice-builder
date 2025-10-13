@@ -2,7 +2,10 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import jsPDF from "jspdf";
-import "jspdf-autotable"; // ✅ Global plugin registration
+import "jspdf-autotable";
+
+// ✅ Force plugin registration (Netlify-safe)
+jsPDF.API.autoTableSetDefaults?.({});
 
 function App() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -88,8 +91,6 @@ function App() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
       <div className="bg-white p-6 rounded shadow-lg">
-
-        {/* ✅ Tailwind Proof Banner */}
         <div className="bg-green-500 text-white p-2 rounded text-center mb-6">
           ✅ Tailwind CSS applied via Vite (no CDN used)
         </div>
