@@ -2,10 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-
-// ✅ Explicitly attach plugin to jsPDF prototype
-jsPDF.API.autoTable = autoTable;
+import autoTable from "jspdf-autotable"; // ✅ Use plugin directly
 
 function App() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -64,7 +61,7 @@ function App() {
     doc.text(`Invoice Number: ${client.invoiceNumber}`, 10, 34);
     doc.text(`Date: ${client.date}`, 10, 41);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 50,
       head: [["Description", "Qty", "Rate", "Amount"]],
       body: items.map((item) => [
