@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable"; // ✅ Use plugin directly
+import autoTable from "jspdf-autotable";
 
 function App() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -86,125 +86,137 @@ function App() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
-      <div className="bg-white p-6 rounded shadow-lg">
-        <div className="bg-green-500 text-white p-2 rounded text-center mb-6">
-          ✅ Tailwind CSS applied via Vite (no CDN used)
-        </div>
+    <>
+      {/* ✅ Header Bar */}
+      <header className="bg-blue-700 text-white py-4 px-6 rounded mb-6 shadow text-center">
+        <h2 className="text-xl font-semibold">🧾 Invoice Builder by Gokulakrishna</h2>
+      </header>
 
-        <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">Invoice</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
+        <div className="bg-white p-6 rounded shadow-lg">
+          <div className="bg-green-500 text-white p-2 rounded text-center mb-6">
+            ✅ Tailwind CSS applied via Vite (no CDN used)
+          </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {["Client Name", "Address", "Invoice Number", "Date"].map((label, idx) => {
-            const field = ["name", "address", "invoiceNumber", "date"][idx];
-            const type = field === "date" ? "date" : "text";
-            return (
-              <div key={field}>
-                <label className="text-sm font-medium">{label}</label>
-                <input
-                  type={type}
-                  className="border p-3 w-full rounded"
-                  placeholder={label}
-                  {...register(field, { required: `${label} is required` })}
-                  value={client[field]}
-                  onChange={(e) => setClient({ ...client, [field]: e.target.value })}
-                />
-                {errors[field] && <p className="text-red-500 text-sm">{errors[field].message}</p>}
-              </div>
-            );
-          })}
-        </div>
+          <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">Invoice</h1>
 
-        <table className="w-full mb-6 border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-2">Description</th>
-              <th className="p-2">Qty</th>
-              <th className="p-2">Rate</th>
-              <th className="p-2">Amount</th>
-              <th className="p-2">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, idx) => (
-              <tr key={idx} className="border-t">
-                <td>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {["Client Name", "Address", "Invoice Number", "Date"].map((label, idx) => {
+              const field = ["name", "address", "invoiceNumber", "date"][idx];
+              const type = field === "date" ? "date" : "text";
+              return (
+                <div key={field}>
+                  <label className="text-sm font-medium">{label}</label>
                   <input
-                    className="border p-2 w-full rounded"
-                    placeholder="Item description"
-                    value={item.description}
-                    onChange={(e) => handleItemChange(idx, "description", e.target.value)}
+                    type={type}
+                    className="border p-3 w-full rounded"
+                    placeholder={label}
+                    {...register(field, { required: `${label} is required` })}
+                    value={client[field]}
+                    onChange={(e) => setClient({ ...client, [field]: e.target.value })}
                   />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    className="border p-2 w-full rounded"
-                    value={item.quantity}
-                    onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    className="border p-2 w-full rounded"
-                    value={item.rate}
-                    onChange={(e) => handleItemChange(idx, "rate", e.target.value)}
-                  />
-                </td>
-                <td className="text-center">₹{item.amount.toFixed(2)}</td>
-                <td>
-                  <button
-                    className="text-red-500"
-                    type="button"
-                    onClick={() => removeItem(idx)}
-                  >
-                    ❌
-                  </button>
-                </td>
+                  {errors[field] && <p className="text-red-500 text-sm">{errors[field].message}</p>}
+                </div>
+              );
+            })}
+          </div>
+
+          <table className="w-full mb-6 border border-gray-300">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2">Description</th>
+                <th className="p-2">Qty</th>
+                <th className="p-2">Rate</th>
+                <th className="p-2">Amount</th>
+                <th className="p-2">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map((item, idx) => (
+                <tr key={idx} className="border-t">
+                  <td>
+                    <input
+                      className="border p-2 w-full rounded"
+                      placeholder="Item description"
+                      value={item.description}
+                      onChange={(e) => handleItemChange(idx, "description", e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      className="border p-2 w-full rounded"
+                      value={item.quantity}
+                      onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      className="border p-2 w-full rounded"
+                      value={item.rate}
+                      onChange={(e) => handleItemChange(idx, "rate", e.target.value)}
+                    />
+                  </td>
+                  <td className="text-center">₹{item.amount.toFixed(2)}</td>
+                  <td>
+                    <button
+                      className="text-red-500"
+                      type="button"
+                      onClick={() => removeItem(idx)}
+                    >
+                      ❌
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <button
-          type="button"
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mb-4"
-          onClick={addItem}
-        >
-          ➕ Add Item
-        </button>
+          <button
+            type="button"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mb-4 shadow transition duration-200"
+            onClick={addItem}
+          >
+            ➕ Add Item
+          </button>
 
-        <div className="text-right space-y-2 mt-4">
-          <p>Subtotal: ₹{totals.subtotal.toFixed(2)}</p>
-          <p>Tax (18%): ₹{totals.tax.toFixed(2)}</p>
-          <p className="font-bold text-lg">Total: ₹{totals.total.toFixed(2)}</p>
+          <div className="text-right space-y-2 mt-4">
+            <p>Subtotal: ₹{totals.subtotal.toFixed(2)}</p>
+            <p>Tax (18%): ₹{totals.tax.toFixed(2)}</p>
+            <p className="font-bold text-lg">Total: ₹{totals.total.toFixed(2)}</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex justify-between mt-6">
-        <button
-          type="submit"
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
-        >
-          ✅ Validate & Preview
-        </button>
+        <div className="flex justify-between mt-6">
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded shadow transition duration-200"
+          >
+            ✅ Validate & Preview
+          </button>
 
-        <button
-          type="button"
-          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded"
-          onClick={generatePDF}
-        >
-          🧾 Export as PDF
-        </button>
-      </div>
-
-      {validated && (
-        <div className="mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-          ✅ Form validated! You can now export the invoice as PDF.
+          <button
+            type="button"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded shadow transition duration-200"
+            onClick={generatePDF}
+          >
+            🧾 Export as PDF
+          </button>
         </div>
-      )}
-    </form>
+
+        {validated && (
+          <div className="mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+            ✅ Form validated! You can now export the invoice as PDF.
+          </div>
+        )}
+      </form>
+
+      {/* ✅ Footer */}
+      <footer className="mt-10 text-center text-gray-500 text-sm">
+        Built by Gokulakrishna • GitHub: <a href="https://github.com/Gokulakrishna15/invoice-builder" className="text-blue-600 underline">View Source</a>
+      </footer>
+    </>
   );
 }
 
