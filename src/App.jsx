@@ -53,17 +53,17 @@ function App() {
     const doc = new jsPDF();
 
     doc.setFontSize(18);
-    doc.text("Invoice", 90, 10);
+    doc.text("Invoice", 14, 20);
 
     doc.setFontSize(12);
-    doc.text(`Client Name: ${client.name}`, 10, 20);
-    doc.text(`Address: ${client.address}`, 10, 27);
-    doc.text(`Invoice Number: ${client.invoiceNumber}`, 10, 34);
-    doc.text(`Date: ${client.date}`, 10, 41);
+    doc.text(`Client Name: ${client.name}`, 14, 30);
+    doc.text(`Address: ${client.address}`, 14, 37);
+    doc.text(`Invoice Number: ${client.invoiceNumber}`, 14, 44);
+    doc.text(`Date: ${client.date}`, 14, 51);
 
     autoTable(doc, {
-      startY: 50,
-      head: [["Description", "Qty", "Rate", "Amount"]],
+      startY: 60,
+      head: [["Description", "Quantity", "Rate", "Amount"]],
       body: items.map((item) => [
         item.description || "-",
         item.quantity,
@@ -71,8 +71,17 @@ function App() {
         `₹${item.amount.toFixed(2)}`
       ]),
       theme: "grid",
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185] },
+      styles: {
+        fontSize: 10,
+        cellPadding: 4,
+        halign: "center",
+        valign: "middle",
+      },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: "bold",
+      },
     });
 
     const finalY = doc.lastAutoTable.finalY + 10;
@@ -87,7 +96,6 @@ function App() {
 
   return (
     <>
-      {/* ✅ Header Bar */}
       <header className="bg-blue-700 text-white py-4 px-6 rounded mb-6 shadow text-center">
         <h2 className="text-xl font-semibold">🧾 Invoice Builder by Gokulakrishna</h2>
       </header>
@@ -212,7 +220,6 @@ function App() {
         )}
       </form>
 
-      {/* ✅ Footer */}
       <footer className="mt-10 text-center text-gray-500 text-sm">
         Built by Gokulakrishna • GitHub: <a href="https://github.com/Gokulakrishna15/invoice-builder" className="text-blue-600 underline">View Source</a>
       </footer>
